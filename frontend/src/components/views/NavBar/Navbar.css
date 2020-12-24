@@ -1,0 +1,90 @@
+@import "~antd/dist/antd.css";
+
+.menu {
+  padding: 0 20px;
+  border-bottom: solid 1px #e8e8e8;
+  overflow: hidden;
+  box-shadow: 0 0 30px #f3f1f1;
+  background-color: white;
+  position: "fixed";
+  z-index: 5;
+  width: "100%";
+}
+
+.menu-logo {
+  width: 150px;
+  float: left;
+}
+
+.menu-logo a {
+  display: inline-block;
+  font-size: 20px;
+  padding: 15px;
+}
+
+.menu-container .ant-menu-item {
+  padding: 0px 5px;
+}
+
+.menu-container .ant-menu-submenu-title {
+  padding: 10px 20px;
+}
+
+.menu-container .ant-menu-item a,
+.menu-container .ant-menu-submenu-title a {
+  padding: 10px 15px;
+}
+
+.menu-container .ant-menu-horizontal {
+  border-bottom: none;
+}
+
+.menu-container .menu-left {
+  float: left;
+}
+
+.menu-container .menu-right {
+  float: right;
+}
+
+.menu-mobile-button {
+  float: right;
+  height: 32px;
+  padding: 6px;
+  margin-top: 8px;
+  display: none !important; /* use of important to overwrite ant-btn */
+  background: #3e91f7;
+}
+
+.menu-drawer .ant-drawer-body {
+  padding: 0 !important;
+}
+
+/* align header of Drawer with header of page */
+.menu-drawer .ant-drawer-header {
+  padding: 14px 24px !important;
+}
+
+@media (max-width: 767px) {
+  .menu-mobile-button {
+    display: inline-block !important;
+  }
+
+  .menu-left,
+  .menu-right {
+    display: none;
+  }
+
+  .menu-logo a {
+    margin-left: -20px;
+  }
+
+  .menu-container .ant-menu-item,
+  .menu-container .ant-menu-submenu-title {
+    padding: 1px 20px;
+  }
+
+  .menu-logo a {
+    padding: 10px;
+  }
+}
