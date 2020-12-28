@@ -81,7 +81,7 @@ function RightMenu(props) {
                 {' '}
                 {user.userData.username}
               </span>
-)}
+            )}
             >
               <MenuItemGroup>
                 <Menu.Item key="user info">
