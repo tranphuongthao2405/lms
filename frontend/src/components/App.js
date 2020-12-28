@@ -14,6 +14,7 @@ import CourseCollection from './views/CourseCollection/CourseCollection';
 import UserInfo from './views/UserInfo/UserInfo';
 import UploadQuiz from './views/UploadQuiz/UploadQuiz';
 import LearningPath from './views/LearningPath/LearningPath';
+import Quiz from './views/Quiz/Quiz';
 
 function App() {
   return (

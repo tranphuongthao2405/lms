@@ -4,6 +4,7 @@ import {
   Form, Select, Input, Typography, Button, Radio, Icon,
 } from 'antd';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -28,7 +29,7 @@ const UploadQuiz = () => {
   const [choiceC, setChoiceC] = useState();
   const [choiceD, setChoiceD] = useState();
   const [data, setData] = useState([]);
-  const [isExisted, setExisted] = useState(false);
+  const history = useHistory();
 
   const onCourseChange = (value) => {
     setCourse(value);
@@ -69,23 +70,32 @@ const UploadQuiz = () => {
     }
   };
 
-  const processData = () => {
+  const processData = (select) => {
     if (course && video) {
       const dataToSubmit = {
         courseId: course,
         videoId: video,
         uploader: localStorage.userId,
         quizzes: data,
+        questionSelected,
       };
 
       if (!question || !choiceA || !choiceB || !choiceC || !choiceD || !answer) {
+        alert('You must fill out all the fields before submitting or changing to other questions.');
+      } else {
         axios.post('/api/quizzes/saveQuiz', dataToSubmit).then((res) => {
           if (res.data.success) {
-            console.log('Successfully save question');
+            console.log('Successfully save or update question');
           } else {
             console.log('Failed to save course');
           }
         });
+
+        if (select === 'next') {
+          setQuestionSelected(questionSelected + 1);
+        } else {
+          setQuestionSelected(questionSelected - 1);
+        }
       }
     }
   };
@@ -98,8 +108,7 @@ const UploadQuiz = () => {
     };
 
     data[questionSelected - 1] = quizData;
-    processData();
-    setQuestionSelected(questionSelected + 1);
+    processData('next');
   };
 
   const onSelectBackQuestion = () => {
@@ -110,8 +119,7 @@ const UploadQuiz = () => {
     };
 
     data[questionSelected - 1] = quizData;
-    processData();
-    setQuestionSelected(questionSelected - 1);
+    processData('back');
   };
 
   const onSubmit = () => {
@@ -119,6 +127,7 @@ const UploadQuiz = () => {
       const updateData = {
         courseId: course,
         videoId: video,
+        uploader: localStorage.userId,
         questionSelected,
         question,
         choices: [choiceA, choiceB, choiceC, choiceD],
@@ -127,7 +136,8 @@ const UploadQuiz = () => {
 
       axios.post('/api/quizzes/updateQuiz', updateData).then((response) => {
         if (response.data.success) {
-          console.log('Update data successfully');
+          alert('Upload quizzes successfully');
+          history.push('/');
         } else {
           console.log('Failed to update data');
         }
@@ -180,27 +190,25 @@ const UploadQuiz = () => {
       axios.post('/api/quizzes/getQuizzes', variables).then((response) => {
         if (response.data.success) {
           if (response.data.quiz !== undefined) {
-            console.log(response.data);
             setQuestion(response.data.quiz[questionSelected - 1].question);
             setAnswer(response.data.quiz[questionSelected - 1].answer);
             setChoiceA(response.data.quiz[questionSelected - 1].choices[0]);
             setChoiceB(response.data.quiz[questionSelected - 1].choices[1]);
             setChoiceC(response.data.quiz[questionSelected - 1].choices[2]);
             setChoiceD(response.data.quiz[questionSelected - 1].choices[3]);
-            setExisted(true);
-          } else {
-            setQuestion('');
-            setAnswer('');
-            setChoiceA('');
-            setChoiceB('');
-            setChoiceC('');
-            setChoiceD('');
-            setExisted(false);
+            setQuizNumber(response.data.quiz.length);
           }
+        } else {
+          setQuestion('');
+          setAnswer('');
+          setChoiceA('');
+          setChoiceB('');
+          setChoiceC('');
+          setChoiceD('');
         }
       });
     }
-  }, [course, video, quizNumber]);
+  }, [course, video, quizNumber, questionSelected]);
 
   return (
     <div style={{ maxWidth: '800px', margin: '2rem auto' }}>

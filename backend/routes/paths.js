@@ -55,6 +55,22 @@ router.post('/updateCourseCollection', auth, (req, res) => {
   );
 });
 
+router.post('/getCourseCollection', auth, (req, res) => {
+  CoursePath.findOne(
+    {
+      user: req.body.userId,
+      status: { $elemMatch: { videoId: req.body.videoId } }
+    },
+    (err, doc) => {
+      if (err) {
+        return res.status(400).json({ success: false, err });
+      }
+
+      return res.status(200).json({ success: true, status: doc.status });
+    }
+  );
+});
+
 router.post('/getAllPaths', auth, (req, res) => {
   CoursePath.find({ user: req.body.userId }, (err, data) => {
     if (err) {

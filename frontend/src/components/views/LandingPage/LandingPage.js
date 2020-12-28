@@ -64,8 +64,8 @@ function LandingPage(props) {
               src={course.thumbnail[0]}
               alt="course thumbnail"
               style={{
-                width: '100%',
-                height: '100%',
+                width: 340,
+                height: 190,
               }}
             />
           </a>

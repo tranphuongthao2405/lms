@@ -4,6 +4,7 @@ import SearchBar from '../../SearchBar/SearchBar';
 
 function SideVideo({ videoId, courseId }) {
   const [sideVideos, setSideVideos] = useState([]);
+  const [courseStatus, setCourseStatus] = useState();
   const [searchTerms, setSearchTerms] = useState();
 
   useEffect(() => {
@@ -14,6 +15,19 @@ function SideVideo({ videoId, courseId }) {
         alert('Failed to get videos');
       }
     });
+
+    const courseVariables = {
+      userId: localStorage.userId,
+      videoId,
+    };
+
+    axios
+      .post('/api/paths/getCourseCollection', courseVariables)
+      .then((response) => {
+        if (response.data.success) {
+          setCourseStatus(response.data.status);
+        }
+      });
   }, []);
 
   const renderVideoItem = sideVideos.map((video) => {

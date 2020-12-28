@@ -2,18 +2,25 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Col, Row, Icon } from 'antd';
-import { useHistory } from 'react-router-dom';
+import {
+  Col, Row, Icon, Modal,
+} from 'antd';
 import SideVideo from './SideVideo/SideVideo';
+import Quiz from '../Quiz/Quiz';
 
 const VideoPlayer = (props) => {
   const { videoId } = props.match.params;
   const { courseId } = props.match.params;
   const [video, setVideo] = useState('');
-  const [courseStatus, setCourseStatus] = useState();
   const [course, setCourse] = useState();
   const [videos, setVideos] = useState();
-  const history = useHistory();
+  const [quizzes, setQuizzes] = useState([]);
+  const [isOk, setOk] = useState(false);
+  const [nextIndex, setNextIndex] = useState(0);
+
+  // modal state
+  const [visible, setVisible] = useState(false);
+  const [modalText, setModalText] = useState('');
 
   useEffect(() => {
     const videoVariables = {
@@ -52,26 +59,34 @@ const VideoPlayer = (props) => {
 
   // track whether video plays till the end
   const onEnded = () => {
-    const variables = {
-      userId: localStorage.userId,
+    const quizVariables = {
+      courseId,
       videoId,
     };
 
-    axios.post('/api/paths/updateCourseCollection', variables).then((response) => {
+    axios.post('/api/quizzes/getQuizzes', quizVariables).then((response) => {
       if (response.data.success) {
-        setCourseStatus(response.data.doc.status);
+        if (response.data.quiz !== undefined) {
+          setQuizzes(response.data.quiz);
+        }
       }
     });
 
-    // find next videos to change
-
     const currentIndex = videos.findIndex((item) => item._id === videoId);
-    let nextIndex = 0;
-    nextIndex = nextIndex < videos.length ? currentIndex + 1 : currentIndex;
+    setNextIndex(nextIndex < videos.length ? currentIndex + 1 : currentIndex);
 
-    history.push(`/video/${videos[nextIndex]._id}/${courseId}`);
-
+    setVisible(true);
+    setModalText('Complete quizzes before turning to new section in this course.');
     console.log('Video ended');
+  };
+
+  const handleOk = () => {
+    setOk(true);
+    setVisible(false);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
   };
 
   return (
@@ -94,26 +109,48 @@ const VideoPlayer = (props) => {
       )}
 
       {video && course ? (
-        <Row>
-          <Col lg={5} xs={20} style={{ marginRight: '4rem', marginLeft: '4rem' }}>
-            <SideVideo videoId={videoId} courseId={courseId} />
-          </Col>
-          <Col lg={15} xs={20}>
-            <div style={{ width: '100%', padding: '3rem 4em' }}>
-              <video
-                className="video-player"
-                style={{
-                  width: '100%',
-                  borderRight: '1px solid rgba(0, 0, 0, 0.8)',
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.8)',
-                }}
-                src={`http://localhost:5000/${video.filePath}`}
-                controls
-                onEnded={onEnded}
+        <>
+          {isOk && quizzes
+            ? (
+              <Quiz
+                quizzes={quizzes}
+                nextVideo={videos[nextIndex] !== undefined ? videos[nextIndex]._id : false}
+                courseId={courseId}
               />
-            </div>
-          </Col>
-        </Row>
+            ) : (
+              <Row>
+                <Col lg={5} xs={20} style={{ marginRight: '4rem', marginLeft: '4rem' }}>
+                  <SideVideo videoId={videoId} courseId={courseId} />
+                </Col>
+                <Col lg={15} xs={20}>
+                  <div style={{ width: '100%', padding: '3rem 4em' }}>
+                    <video
+                      className="video-player"
+                      style={{
+                        width: '100%',
+                        borderRight: '1px solid rgba(0, 0, 0, 0.8)',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.8)',
+                      }}
+                      src={`http://localhost:5000/${video.filePath}`}
+                      controls
+                      onEnded={onEnded}
+                    />
+
+                    <Modal
+                      title="Title"
+                      visible={visible}
+                      onOk={handleOk}
+                      onCancel={handleCancel}
+                    >
+                      <p>{modalText}</p>
+                    </Modal>
+
+                  </div>
+                </Col>
+              </Row>
+            )}
+        </>
+
       ) : (
         <h1
           style={{

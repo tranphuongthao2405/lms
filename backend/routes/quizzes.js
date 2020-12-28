@@ -4,10 +4,9 @@ const router = express.Router();
 const { Quiz } = require('../models/Quiz');
 const { auth } = require('../middleware/auth');
 
-// 1. save quiz
-// 2. get quiz to fill value in form
-
 router.post('/saveQuiz', auth, (req, res) => {
+  const questionSelected = req.body.questionSelected;
+
   const quizzes = new Quiz({
     courseId: req.body.courseId,
     uploader: req.body.uploader,
@@ -23,7 +22,9 @@ router.post('/saveQuiz', auth, (req, res) => {
     },
     {
       $set: { 
-        quizzes: req.body.quizzes,
+        [`quizzes.${questionSelected - 1}.question`]: req.body.quizzes[questionSelected - 1].question, 
+        [`quizzes.${questionSelected - 1}.choices`]: req.body.quizzes[questionSelected - 1].choices,
+        [`quizzes.${questionSelected - 1}.answer`]: req.body.quizzes[questionSelected - 1].answer,
       }
     },
     { new: true },
@@ -35,10 +36,6 @@ router.post('/saveQuiz', auth, (req, res) => {
       if(!doc) {
         quizzes.save((err, data) => {
           if (err) return res.json({ success: false, err });
-          return res.json({
-            success: true,
-            data
-          });
         });
       }
 
@@ -57,26 +54,28 @@ router.post('/getQuizzes', auth, (req, res) => {
       if(err) {
         return res.status(400).json({success: false, err});
       }
+
+      if(!doc || doc[0] === undefined) {
+        return res.json({success: false, isExisted: false})
+      }
       
-      return res.status(200).json({success: true, quiz: doc.quizzes});
+      return res.status(200).json({success: true, quiz: doc[0].quizzes});
     })
 });
 
 router.post("/updateQuiz", auth, (req, res) => {
-  const courseId = req.body.courseId;
-  const videoId = req.body.videoId;
-
+  const questionSelected = req.body.questionSelected;
   Quiz.findOneAndUpdate(
     {
-      courseId: courseId, 
-      videoId: videoId,
-      quizzes: { $elemMatch: {number: req.body.questionSelected} }
+      courseId: req.body.courseId, 
+      videoId: req.body.videoId,
+      uploader: req.body.uploader,
     },
     {
       $set: { 
-        'quizzes.$.question': req.body.question, 
-        'quizzes.$.choices': req.body.choices,
-        'quizzes.$.answer': req.body.answer,
+        [`quizzes.${questionSelected - 1}.question`]: req.body.question, 
+        [`quizzes.${questionSelected - 1}.choices`]: req.body.choices,
+        [`quizzes.${questionSelected - 1}.answer`]: req.body.answer,
       }
     },
     { new: true },
